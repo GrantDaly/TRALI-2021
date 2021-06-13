@@ -1,0 +1,34 @@
+################ Preliminary Calls and basic annotations ###########################
+
+bcftools mpileup -f ~/huvecs/references/ensembl-98/Homo_sapiens.GRCh38.dna.primary_assembly.ens98.chr.fa -r chrM -d 1000 -q 20 -Q 20 -a FORMAT/AD,FORMAT/ADF,FORMAT/ADR,FORMAT/DP,FORMAT/SP,INFO/AD,INFO/ADF,INFO/ADR ` ls ../../new-alignments/*.bam` | bcftools call -m -A | bcftools filter -e 'ALT=="."' -O z -o grouped.raw.vcf.gz
+
+curl -X GET "https://api.ncbi.nlm.nih.gov/variation/v0/vcf/chrMT/4100/T/A/contextuals?assembly=GCF_000001405.38" -H  "accept: application/json"
+
+zcat grouped.raw.vcf.gz | sed "s/chrM/chrMT/g" > grouped.ncbiformat.vcf 
+
+# had to change chromosome names from chrM to chrMT
+
+wget  "https://api.ncbi.nlm.nih.gov/variation/v0/vcf/file/set_rsids?assembly=GCF_000001405.38" --post-file grouped.ncbiformat.vcf
+
+# changed back
+ sed 's/chrMT/chrM/g' set_rsids\?assembly\=GCF_000001405.38 | gzip > grouped.dbsnp.vcf.gz
+
+# add header to vcf
+cat <( bcftools view -h grouped.raw.vcf.gz ) <(zcat grouped.dbsnp.vcf.gz ) | gzip > grouped.dbsnp.headerfixed.vcf.gz
+
+
+# normalize so one alt allele per row
+bcftools norm -m - --fasta-ref ~/huvecs/references/ensembl-98/Homo_sapiens.GRCh38.dna.primary_assembly.ens98.chr.fa grouped.dbsnp.headerfixed.vcf.gz -O z -o norm.altsOnly.vcf.gz
+gunzip -k norm.altsOnly.vcf.gz 
+
+ 
+# Used modification of PyVCF to call variants according to our definition of heteroplasmy. Code is available as a GitHub fork at github.com/GrantDaly/PyVCF
+
+pip install -e ../ ; python call-mito.py ../../variants/grouped/norm.altsOnly.vcf.gz ../../variants/grouped/calls-norm.vcf
+
+bcftools view calls-norm.vcf -O z -o  calls-norm.vcf.gz
+ bcftools index calls-norm.vcf.gz
+ 
+ # convert into tab separated, this is used by the Jupyter Notebook to access data
+ bcftools query -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%TYPE\tSample:ADRef:ADVar:ADFor-Ref:ADFor-Var:ADRev-Ref:ADRev-Var:SBFisher:MinorFreq:Genotype[\t%SAMPLE\t%AD{0}\t%AD{1}\t%ADF{0}\t%ADF{1}\t%ADR{0}\t%ADR{1}\t%SP\t%AF\t%GT]\n' calls-norm.vcf.gz > variants.tsv 
+ 

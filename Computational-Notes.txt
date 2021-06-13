@@ -1,0 +1,113 @@
+####### Conda Environment ###########3
+Packages of a Conda environment used for this project was exported to conda-env-TRALI.yml
+
+This section describes the generation of polymorphic NUMT from the Dayama et al. paper. These were taken from the Dayama supplementary material from their paper. We provide the Dayama et al. citation in our manuscript.
+############  made new diyama sites #######################3
+1-29-21
+had to redo Dayama for some reason the 1000 genomes derived ones did not lift over correctly
+retreived Dayama supplementary vcfs on 1-29-21 linked in paper
+
+bcftools query -f "%CHROM\t%POS\t%END\t%ID\t0\t.\n" ALL.dinumt.phase1.hgdp.final.numts.sites.vcf > dayama.grch37.bed
+
+# slop 200 bp +-, then liftover to GRCh38 coordinates from GRCh37
+bedtools v2.26.0
+~/huvecs/software/ucsc-tools/liftOver dayama.grch37.200slop.bed ~/huvecs/references/variants/1000-genomes/grch37to38.chain dayama.grch38.200slop.bed liftover.failed.txt
+
+3 deleted in new, as seen in bedtools-slop/liftover.failed.txt
+138 / 141 lifted over.
+#Deleted in new
+GL000214.1	91146	91547	Poly_NumtS_2734	0	.
+#Deleted in new
+GL000218.1	17039	17440	Poly_NumtS_2736	0	.
+#Deleted in new
+GL000211.1	77328	77780	Poly_NumtS_2733	0	.
+################### Blast Alignments ##############################################
+retreived blast numt results from Alabama Supercomputer
+
+I ran a blast to an unmasked GRCh38 Homo Sapiens with "blastn-short". The script used is "run-blasts-human-12-17-20.sh"
+run-blasts-human-12-17-20.sh resulted in output rCStoGRCh38-12-17-20.json.gz
+
+# generated haplotype and numt bed files
+
+python process-blast-output.py rCStoGRCh38-11-20-20.json.gz numt-GRCh38
+
+This output files numt-GRCh38.bed  numt-GRCh38.haplotypes.json
+
+########################## BWA Alignments ######################################
+# To align with BWA-mem I used "run-alignments.py". This script called the Google Genomics API to run a Sentieon Genomics Docker Image. This Docker image can be generated from sentieon-docker-201911.01. The relevant script for this Docker image is "mito-workflow.sh", which calls BWA-MEM. "run-alignments.py" accesses "alignment.pipeline" and "merge.pipeline" as Google Genomics pipeline JSON files. The input files used are under the "file-inputs" directory.
+
+Example usage
+python run-alignments.py <file-inputs.json> > logfile
+
+
+############### Mito Only alignments ################################
+This is how alignments to the mitochondrial genome only were performed with BWA-MEM.
+
+Used "convertFastq.py" to Npad all non-mitochondrial chromosomes
+Ran standard pipeline
+run-alignments.py with file-list-mito-only.json
+
+
+#12-1-20
+made a dict to map chromosome names
+ samtools view -H new-alignments/MGUSA_8.sorted.merged.bam | grep -e "^@SQ" | cut -f 2 | sed "s/SN://" | awk '{OFS="\t"}{orig=$1; new=$1; gsub(/\..+$/, "",new); print new, orig}' > chromosome.versions.tsv
+
+################ 3 Simulated Reads ########################################
+# 12-14-20
+made a cutdown numt bed where I slopped 100bp to both sides and then merged within 100 bp
+LC_ALL=C sort -k1,1 -k2,2n numt-GRCh38.fixed.bed |\
+ bedtools slop -b 100 -i - \
+-g ~/huvecs/references/ensembl-98/Homo_sapiens.GRCh38.dna.primary_assembly.ens98.chr.genome \
+| bedtools merge -d 100 -i - > numt-GRCh38.merged.bed
+
+# then made fasta of these merged numt
+bedtools getfasta -fi ~/huvecs/references/ensembl-98/Homo_sapiens.GRCh38.dna.primary_assembly.ens98.chr.fa -bed numt-GRCh38.merged.bed -name > numt-GRCh38.merged.fasta
+
+# counted up the number of base pairs in these merged NUMT
+ awk 'BEGIN{total=0} {tempInt= $3 - $2; total+=tempInt;} END{print "Total Loci", total} ' numt-GRCh38.merged.bed 
+Total Loci 408402
+
+# 1-21-21
+# in ~/mitochondrial/software/art_bin_MountRainier
+# made simulations of read length 50, frag 75,100,150,300 +- 25 paired, coverage 1000 for only mito and only numt
+
+READSIZE=50
+for INSERT in 100 150 300; do ~/mitochondrial/software/art_bin_MountRainier/art_illumina  -i ~/mitochondrial/mitoPseudo4_24_19/newPseudogenome/workflow-11-2020/numt-GRCh38.merged.fasta -m $INSERT -s 25 -l $READSIZE -p -f 1000 --noALN -o simulated/numt-sim."$READSIZE"."$INSERT". ; done
+
+for INSERT in 100 150 300; do ~/mitochondrial/software/art_bin_MountRainier/art_illumina -i ~/huvecs/references/mitochondria/mito.Nremoved.human.fa -m $INSERT -s 25 -l $READSIZE -p -f 1000 --noALN -o simulated/mito-sim."$READSIZE"."$INSERT". ; done
+
+
+# dayama sequences
+~/mitochondrial/software/art_bin_MountRainier/art_illumina -i ~/mitochondrial/mitoPseudo4_24_19/newPseudogenome/workflow-11-2020/dayama-sequences.fasta -m 150 -s 25 -l 50 -p -f 1000 --noALN -o ~/mitochondrial/mitoPseudo4_24_19/newPseudogenome/workflow-11-2020/simulated/dayama.50.150. &
+
+
+# ran alignments
+python run-alignments.py
+file-inputs-simulated-4-14-21.json
+
+
+#### Heteroplasmy Calls ############
+
+The details for variant calling are in "variants/workflow.txt"
+####################### Made shuffled NUMT ##################3
+
+These were used as essentially a negative control for nuclear DNA. Not expected to have high homology to mito so wouldn't be pulled down significantly by baits.
+
+bedtools shuffle -i numt-GRCh38.fixed.bed -g ~/huvecs/references/ensembl-98/Homo_sapiens.GRCh38.dna.primary_assembly.ens98.chr.genome | bedtools sort -i - > shuf-numt.bed
+
+bedtools getfasta -fi ~/huvecs/references/ensembl-98/Homo_sapiens.GRCh38.dna.primary_assembly.ens98.chr.fa -bed shuf-numt.bed > shuf-numt.fasta
+
+#then I cross-referenced the fasta to the bed and manually removed entries which were all "N"
+
+#fixed the diyama to be true bed, score is allele frequency
+awk 'BEGIN{OFS="\t"; counter=1;}{print $1, $2, $3, "diyama_"counter, $4 , "." ; ++counter;}' diyama-sites.bed > diyama-sites.fixed.bed
+
+
+######################  Further analysis with Jupyter Notebook #################
+# Coverages, Insert Stats, and heteroplasmies were further analysed in "Analysis.ipynb"
+
+"design.csv" is the design file linking sample names to groups
+This outputs the Excel workbook that inferences were drawn from.
+
+
+

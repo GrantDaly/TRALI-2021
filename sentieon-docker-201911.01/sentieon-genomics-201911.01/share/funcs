@@ -1,0 +1,101 @@
+start_local_license_server()
+{
+    local licsrvr licfile logfile timeout
+
+    [ "$fun" = "licsrvr" ] && return
+
+    licsrvr="$install_dir/libexec/licsrvr"
+    licfile="$SENTIEON_LICENSE"
+    logfile="${TMPDIR:-/tmp}/licsrvr.log"
+
+    #check if this is a localhost license
+    if grep -q '^MachineID: *localhost:[0-9]*' "$licfile"; then
+        timeout=0
+        #check if licsrvr is running
+        while ! "$licsrvr" --ping "$licfile" 2>/dev/null; do
+            "$licsrvr" --start --log "$logfile" --linger 300 "$licfile"
+            sleep 1
+            timeout=$(($timeout+1))
+            if [ $timeout -eq 30 ]; then
+                echo "License server could not be started" >&2
+                echo "Please check $logfile for more information" >&2
+                exit 2
+            fi
+        done
+    fi
+}
+
+setup_rtld_path()
+{
+    local libdir
+
+    libdir="$install_dir/lib"
+
+    case "$(uname)" in
+    Darwin)
+        ;;
+    CYGWIN*)
+        PATH="${PATH:+$PATH:}$libdir"
+        export PATH
+        ;;
+    *)
+        LD_LIBRARY_PATH="$libdir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export LD_LIBRARY_PATH
+        ;;
+    esac
+}
+
+setup_data_path()
+{
+    export FONTCONFIG_FILE="$install_dir/etc/fonts/fonts.conf"
+    export XDG_DATA_HOME="$install_dir/share"
+}
+
+setup_python_path()
+{
+    local prog vers pylib
+
+    # for python based scripts
+    prog="${SENTIEON_PYTHON:-python}"
+    vers=$("$prog" --version 2>/dev/null)
+    vers=$(expr "$vers" : 'Python \([0-9]*.[0-9]*\)')
+    if [ "$vers" -a -d "$install_dir/lib/python$vers" ]; then
+        PYTHONPATH="$install_dir/lib/python$vers:${PYTHONPATH##:}"
+    fi
+    PYTHONPATH="$install_dir/lib/python/sentieon:${PYTHONPATH##:}"
+    PYTHONPATH="${PYTHONPATH%%:}" # remove trailing :
+    export PYTHONPATH
+
+    [ "$fun" != "driver" -a "$fun" != "util" ] && return
+
+    # for embedded python algo
+    case "$(uname)" in
+    Darwin)
+        ;;
+    CYGWIN*)
+        ;;
+    *)
+        # detect libpython2.7.so path
+        for prog in ${SENTIEON_PYTHON:-python2 python}; do
+            pylib=$("$prog" -c "
+import os
+import sys
+from distutils import sysconfig
+
+v = sys.hexversion >> 16
+if v >= 0x0207 and v < 0x0300:
+    for d in sysconfig.get_config_vars('LIBDIR'):
+        if 'libpython2.7.so.1.0' in os.listdir(d):
+            print(d)
+            break
+            " 2>/dev/null)
+            [ $? -ne 0 ] && continue
+            [ "$pylib" ] && break
+        done
+        LD_LIBRARY_PATH="${LD_LIBRARY_PATH%%:}:$pylib"
+        LD_LIBRARY_PATH="${LD_LIBRARY_PATH%%:}:$install_dir/lib/python"
+        LD_LIBRARY_PATH="${LD_LIBRARY_PATH##:}" # remove leading :
+        export LD_LIBRARY_PATH
+        ;;
+    esac
+}

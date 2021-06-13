@@ -1,0 +1,6 @@
+#Deleted in new
+GL000214.1	91146	91547	Poly_NumtS_2734	0	.
+#Deleted in new
+GL000218.1	17039	17440	Poly_NumtS_2736	0	.
+#Deleted in new
+GL000211.1	77328	77780	Poly_NumtS_2733	0	.
