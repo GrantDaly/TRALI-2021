@@ -1,0 +1,39 @@
+{
+   "bucket":"south-al-genomics",
+   "blob-prefix":"mitochondrial-DNA/alignments-11-3-20",
+   "reference-dir":"gs://south-al-genomics/references/ensembl-98",
+   "reference":"Homo_sapiens.GRCh38.dna.primary_assembly.ens98.chr.fa",
+   "sampleList":[
+      {
+         "sample":"Mito-Only-Sim",
+         "flowcellList":[
+            {
+               "id":"RG1",
+               "fastq1":"gs://south-al-genomics/mitochondrial-DNA/alignments-11-3-20/workflow/simulated/mito.sim1.fq.gz",
+               "fastq2":"gs://south-al-genomics/mitochondrial-DNA/alignments-11-3-20/workflow/simulated/mito.sim2.fq.gz"
+            }
+         ]
+      },
+      {
+         "sample":"NUMT-Only-Sim",
+         "flowcellList":[
+            {
+               "id":"RG1",
+               "fastq1":"gs://south-al-genomics/mitochondrial-DNA/alignments-11-3-20/workflow/simulated/numt.sim1.fq.gz",
+               "fastq2":"gs://south-al-genomics/mitochondrial-DNA/alignments-11-3-20/workflow/simulated/numt.sim2.fq.gz"
+            }
+         ]
+      },
+      {
+         "sample":"Dayama-Sequences",
+         "flowcellList":[
+            {
+               "id":"RG1",
+               "fastq1":"gs://south-al-genomics/mitochondrial-DNA/alignments-11-3-20/workflow/simulated/dayama1.fq.gz",
+               "fastq2":"gs://south-al-genomics/mitochondrial-DNA/alignments-11-3-20/workflow/simulated/dayama2.fq.gz"
+            }
+         ]
+      }
+
+   ]
+}

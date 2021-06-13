@@ -1,0 +1,12 @@
+Sample	Enrichment	Condition	Day	Location	Patient	Age	Race	Lactate	Creatinine	Patient Code
+SL266687	Enriched	Normal	1	Mobile	1	41	African-American	6.4	1.12	No Transfusion 1
+SL266688	Enriched	Normal	3	Mobile	1	41	African-American	4.6	0.86	No Transfusion 1
+SL266689	Enriched	Massive Transfusion	1	Mobile	2	33	White	5.9	1.08	Massive Transfusion 1
+SL266690	Enriched	Massive Transfusion	3	Mobile	2	33	White	5	1.12	Massive Transfusion 1
+MGUSA_5	Enriched	Normal	1	Tallahassee	3	41	African-American	2.5	1.1	No Transfusion 2
+MGUSA_6	Enriched	Normal	3	Tallahassee	3	41	African-American	3.3	0.92	No Transfusion 2
+MGUSA_7	Enriched	Massive Transfusion	1	Tallahassee	4	38	White	2.9	1.04	Massive Transfusion 2
+MGUSA_8	Enriched	Massive Transfusion	3	Tallahassee	4	38	White	2.4	1.17	Massive Transfusion 2
+MGUSA_18	Nonenriched	Normal	3	Tallahassee	3	41	African-American	3.3	0.92	No Transfusion 2
+MGUSA_19	Nonenriched	Massive Transfusion	1	Tallahassee	4	38	White	2.9	1.04	Massive Transfusion 2
+MGUSA_20	Nonenriched	Massive Transfusion	3	Tallahassee	4	38	White	2.4	1.17	Massive Transfusion 2

@@ -1,0 +1,24 @@
+{
+   "bucket": "south-al-genomics",
+   "blob-prefix": "mitochondrial-DNA/alignments-11-3-20",
+    "reference-dir": "gs://south-al-genomics/references/mitochondria",
+    "reference": "mitochondria.human.fa",     
+   "sampleList":[
+      
+      {
+         "sample":"SL266690-Mito-Align",
+         "flowcellList":[
+            {
+               "id":"CBLY1ANXX",
+               "fastq1":"gs://south-al-genomics/mitochondrial-DNA/mt-DNA-17-09-26/raw-files/CBLY1ANXX_s6_1_illumina12index_4_SL266690.fastq.gz",
+               "fastq2":"gs://south-al-genomics/mitochondrial-DNA/mt-DNA-17-09-26/raw-files/CBLY1ANXX_s6_2_illumina12index_4_SL266690.fastq.gz"
+            },
+            {
+               "id":"CBMEUANXX",
+               "fastq1":"gs://south-al-genomics/mitochondrial-DNA/mt-DNA-17-09-26/raw-files/CBMEUANXX_s6_1_illumina12index_4_SL266690.fastq.gz",
+               "fastq2":"gs://south-al-genomics/mitochondrial-DNA/mt-DNA-17-09-26/raw-files/CBMEUANXX_s6_2_illumina12index_4_SL266690.fastq.gz"
+            }
+         ]
+      }
+   ]
+}

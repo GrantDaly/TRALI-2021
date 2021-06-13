@@ -1,0 +1,2 @@
+#!/bin/sh
+"${SENTIEON_PYTHON:-python}" "$SENTIEON_INSTALL_DIR"/lib/python/sentieon/$(basename "$0").py "$@"
