@@ -1,0 +1,33 @@
+#!/bin/sh
+case "$0" in
+/*)     bin_dir=$(dirname "$0");;
+*)      bin_dir=$(dirname "$(pwd)/$0");;
+esac
+case "$bin_dir" in
+*/.)    install_dir="$bin_dir.";;
+*)      install_dir=$(dirname "$bin_dir");;
+esac
+export SENTIEON_INSTALL_DIR="$install_dir"
+
+# load common function definitions
+if [ -f "$install_dir/share/funcs" ]; then
+    . "$install_dir/share/funcs"
+fi
+
+libexec_dir=$install_dir/libexec
+
+fun=bwa
+cmd="$libexec_dir/$fun"
+if [ ! -f "$cmd" ]; then
+    echo "Command $fun not found"
+    exit 1
+fi
+
+setup_rtld_path
+
+# start local license server if needed
+if [ "$#" -gt 2 -a -e "$SENTIEON_LICENSE" ]; then
+    start_local_license_server
+fi
+
+exec $cmd "$@"

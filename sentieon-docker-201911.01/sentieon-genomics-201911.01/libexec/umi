@@ -1,0 +1,27 @@
+#!/bin/sh
+libexec_dir=$SENTIEON_INSTALL_DIR/lib/umi
+
+if [ $# -eq 0 ]; then
+    echo "Usage: umi <subcommand> [options] [args]"
+    echo
+    echo "Supported subcommands are:"
+    echo "  extract"
+    echo "  consensus"
+    exit 0
+fi
+
+fun=$1; shift
+
+case "$fun" in 
+extract)
+    exec $libexec_dir/umiutil extract "$@"
+    ;;
+consensus)
+    exec $libexec_dir/umi consensus "$@"
+    ;;
+*)
+    echo "Unknown subcommand $fun" 1>&2
+    ;;
+esac
+
+exit 1
