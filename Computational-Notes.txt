@@ -1,3 +1,15 @@
+#### The virtual machine used ##############3
+Google Compute Engine "N1-standard" series. Compute engine allows you to stop an instance and resize it for different memory and processor parameters.
+
+Instance Id
+385117345819736932
+
+CPU platform
+Intel Skylake
+
+Image
+debian-9-stretch-v20190423
+
 ####### Conda Environment ###########3
 Packages of a Conda environment used for this project was exported to conda-env-TRALI.yml
 
@@ -107,7 +119,8 @@ awk 'BEGIN{OFS="\t"; counter=1;}{print $1, $2, $3, "diyama_"counter, $4 , "." ; 
 # Coverages, Insert Stats, and heteroplasmies were further analysed in "Analysis.ipynb"
 
 "design.csv" is the design file linking sample names to groups
-This outputs the Excel workbook that inferences were drawn from.
+
+The outputs are Excel workbooks in the "workbooks" directory. These tables were included as supplemental tables and are what biological inferences were drawn from.
 
 
 
