@@ -121,6 +121,3 @@ awk 'BEGIN{OFS="\t"; counter=1;}{print $1, $2, $3, "diyama_"counter, $4 , "." ; 
 "design.csv" is the design file linking sample names to groups
 
 The outputs are Excel workbooks in the "workbooks" directory. These tables were included as supplemental tables and are what biological inferences were drawn from.
-
-
-
